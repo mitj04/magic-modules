@@ -17,9 +17,6 @@ versions:
   - !ruby/object:Api::Product::Version
     name: ga
     base_url: https://dataproc.googleapis.com/v1/
-  - !ruby/object:Api::Product::Version
-    name: beta
-    base_url: https://dataproc.googleapis.com/v1beta2/
 scopes:
   - https://www.googleapis.com/auth/cloud-identity
 apis_required:
@@ -620,3 +617,474 @@ objects:
                     name: 'realm'
                     description: |
                       The name of the on-cluster Kerberos realm.
+  - !ruby/object:Api::Resource
+    name: 'Batches'
+    create_url: projects/{{project}}/locations/{{location}}/batches?batchId={{batch_id}}
+    base_url: "projects/{{project}}/locations/{{location}}/batches"
+    self_link: "projects/{{project}}/locations/{{location}}/batches/{{batch_id}}"
+    input: true
+    references: !ruby/object:Api::Resource::ReferenceLinks
+      api: 'https://cloud.google.com/dataproc-serverless/docs/reference/rest/v1/projects.locations.batches'
+    description: |
+      Describes a batch workload in the service.
+    async: !ruby/object:Api::OpAsync
+      actions:
+        - create
+      operation: !ruby/object:Api::OpAsync::Operation
+        path: 'name'
+        base_url: '{{op_id}}'
+        wait_ms: 1000
+      result: !ruby/object:Api::OpAsync::Result
+        path: 'response'
+        resource_inside_response: true
+      status: !ruby/object:Api::OpAsync::Status
+        path: 'done'
+        complete: true
+        allowed:
+          - true
+          - false
+      error: !ruby/object:Api::OpAsync::Error
+        path: 'error'
+        message: 'message'
+    parameters:
+      - !ruby/object:Api::Type::String
+        name: 'location'
+        url_param_only: true
+        input: true
+        required: true
+        description: |
+          The location of the Dataproc batches where your workload will run.
+    identity:
+      - batchId
+    properties:
+      # batchId
+      - !ruby/object:Api::Type::String
+        name: 'batchId'
+        url_param_only: true
+        input: true
+        description: |
+          The ID to use for the batch, which will become the final component of the batch's resource name.
+          This value must be 4-63 characters. Valid characters are /[a-z][0-9]-/.
+
+      # name
+      - !ruby/object:Api::Type::String
+        name: name
+        description: |
+          The resource name of the batch.
+        output: true
+
+      # uuid
+      - !ruby/object:Api::Type::String
+        name: uuid
+        description: |
+          A batch UUID (Unique Universal Identifier). The service generates this value when it creates the batch.
+        output: true
+
+      # createTime
+      - !ruby/object:Api::Type::String
+        name: createTime
+        description: |
+          The time when the batch was created.
+        output: true
+
+      # runtimeInfo
+      - !ruby/object:Api::Type::NestedObject
+        name: 'runtimeInfo'
+        description: |
+          Runtime information about batch execution.
+        output: true
+        properties:
+          - !ruby/object:Api::Type::KeyValuePairs
+            name: 'endpoints'
+            output: true
+            description: |
+              Map of remote access endpoints (such as web interfaces and APIs) to their URIs.
+          - !ruby/object:Api::Type::String
+            name: 'outputUri'
+            output: true
+            description: |
+              A URI pointing to the location of the stdout and stderr of the workload.
+          - !ruby/object:Api::Type::String
+            name: 'diagnosticOutputUri'
+            output: true
+            description: |
+              A URI pointing to the location of the diagnostics tarball.
+          - !ruby/object:Api::Type::NestedObject
+            name: 'approximateUsage'
+            description: |
+              Approximate workload resource usage calculated after workload finishes.
+            output: true
+            properties:
+              - !ruby/object:Api::Type::String
+                name: 'milliDcuSeconds'
+                output: true
+                description: |
+                  DCU (Dataproc Compute Units) usage in (milliDCU x seconds).
+              - !ruby/object:Api::Type::String
+                name: 'shuffleStorageGbSeconds'
+                output: true
+                description: |
+                  Shuffle storage usage in (GB x seconds).
+
+      # state
+      - !ruby/object:Api::Type::Enum
+        name: state
+        description: |
+          The state of the batch.
+        values:
+          - :STATE_UNSPECIFIED
+          - :PENDING
+          - :RUNNING
+          - :CANCELLING
+          - :CANCELLED
+          - :SUCCEEDED
+          - :FAILED
+        output: true
+
+      # stateMessage
+      - !ruby/object:Api::Type::String
+        name: stateMessage
+        description: |
+          Batch state details, such as a failure description if the state is FAILED.
+        output: true
+
+      # stateTime
+      - !ruby/object:Api::Type::String
+        name: stateTime
+        description: |
+          The time when the batch entered a current state.
+        output: true
+
+      # creator
+      - !ruby/object:Api::Type::String
+        name: creator
+        description: |
+          The email address of the user who created the batch.
+        output: true
+
+      # labels
+      - !ruby/object:Api::Type::KeyValuePairs
+        name: 'labels'
+        description: |
+          The labels to associate with this batch.
+          Label keys must contain 1 to 63 characters, and must conform to RFC 1035.
+          Label values may be empty, but, if present, must contain 1 to 63 characters, and must conform to RFC 1035.
+          No more than 32 labels can be associated with a batch.
+        input: true
+
+      # runtimeConfig
+      - !ruby/object:Api::Type::NestedObject
+        name: 'runtimeConfig'
+        description: |
+          Runtime configuration for the batch execution.
+        input: true
+        properties:
+          - !ruby/object:Api::Type::String
+            name: 'version'
+            description: |
+              Version of the batch runtime.
+            input: true
+          - !ruby/object:Api::Type::String
+            name: 'containerImage'
+            description: |
+              Optional custom container image for the job runtime environment. If not specified, a default container image will be used.
+            input: true
+          - !ruby/object:Api::Type::KeyValuePairs
+            name: 'properties'
+            description: |
+              A mapping of property names to values, which are used to configure workload execution.
+            input: true
+
+      # environmentConfig
+      - !ruby/object:Api::Type::NestedObject
+        name: 'environmentConfig'
+        description: |
+          Environment configuration for a workload.
+        input: true
+        properties:
+          # executionConfig
+          - !ruby/object:Api::Type::NestedObject
+            name: 'executionConfig'
+            description: |
+              Execution configuration for a workload.
+            input: true
+            properties:
+            - !ruby/object:Api::Type::String
+              name: 'serviceAccount'
+              description: |
+                Service account that used to execute workload.
+              input: true
+            - !ruby/object:Api::Type::Array
+              name: "networkTags"
+              description: |
+                Tags used for network traffic control.
+              input: true
+              item_type: Api::Type::String
+            - !ruby/object:Api::Type::String
+              name: 'kmsKey'
+              description: |
+                The Cloud KMS key to use for encryption.
+              input: true
+            - !ruby/object:Api::Type::String
+              name: 'idleTtl'
+              description: |
+                The duration to keep the session alive while it's idling.
+                Passing this threshold will cause the session to be terminated.
+                Minimum value is 30 minutes; maximum value is 14 days
+              input: true
+            - !ruby/object:Api::Type::String
+              name: 'networkUri'
+              description: |
+                Network URI to connect workload to.
+              exactly_one_of:
+                - environment_config.0.execution_config.0.network_uri
+                - environment_config.0.execution_config.0.subnetwork_uri
+              input: true
+            - !ruby/object:Api::Type::String
+              name: 'subnetworkUri'
+              description: |
+                Subnetwork URI to connect workload to.
+              exactly_one_of:
+                - environment_config.0.execution_config.0.network_uri
+                - environment_config.0.execution_config.0.subnetwork_uri
+              input: true
+
+          # peripheralsConfig
+          - !ruby/object:Api::Type::NestedObject
+            name: 'peripheralsConfig'
+            description: |
+              Peripherals configuration that workload has access to.
+            input: true
+            properties:
+            # metastoreService
+            - !ruby/object:Api::Type::String
+              name: 'metastoreService'
+              description: |
+                Resource name of an existing Dataproc Metastore service.
+              input: true
+            # sparkHistoryServerConfig
+            - !ruby/object:Api::Type::NestedObject
+              name: 'sparkHistoryServerConfig'
+              description: |
+                The Spark History Server configuration for the workload.
+              input: true
+              properties:
+              - !ruby/object:Api::Type::String
+                name: 'dataprocCluster'
+                description: |
+                  Resource name of an existing Dataproc Cluster to act as a Spark History Server for the workload.
+                input: true
+
+      # operation
+      - !ruby/object:Api::Type::String
+        name: operation
+        description: |
+          The resource name of the operation associated with this batch.
+        output: true
+
+      # stateHistory
+      - !ruby/object:Api::Type::Array
+        name: 'stateHistory'
+        description: 'Historical state information for the batch.'
+        output: true
+        item_type: !ruby/object:Api::Type::NestedObject
+          properties:
+            - !ruby/object:Api::Type::Enum
+              name: state
+              description: |
+                The state of the batch at this point in history.
+              values:
+                - :STATE_UNSPECIFIED
+                - :PENDING
+                - :RUNNING
+                - :CANCELLING
+                - :CANCELLED
+                - :SUCCEEDED
+                - :FAILED
+              output: true
+            - !ruby/object:Api::Type::String
+              name: 'stateMessage'
+              description: |
+                Details about the state at this point in history.
+              output: true
+            - !ruby/object:Api::Type::String
+              name: 'stateStartTime'
+              description: |
+                The time when the batch entered the historical state.
+              output: true
+
+      # pysparkBatch
+      - !ruby/object:Api::Type::NestedObject
+        name: 'pysparkBatch'
+        description: |
+          A configuration for running an Apache PySpark batch workload.
+        input: true
+        exactly_one_of:
+          - pysparkBatch
+          - sparkBatch
+          - sparkRBatch
+          - sparkSqlBatch
+        properties:
+          - !ruby/object:Api::Type::String
+            name: 'mainPythonFileUri'
+            required: true
+            description: |
+              The HCFS URI of the main Python file to use as the Spark driver. Must be a .py file.
+            input: true
+          - !ruby/object:Api::Type::Array
+            name: "args"
+            input: true
+            description: |
+              The arguments to pass to the driver.
+              Do not include arguments that can be set as batch properties, such as --conf, since a collision can occur that causes an incorrect batch submission.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "pythonFileUris"
+            input: true
+            description: |
+              HCFS file URIs of Python files to pass to the PySpark framework.
+              Supported file types: .py, .egg, and .zip.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "jarFileUris"
+            input: true
+            description: |
+              HCFS URIs of jar files to add to the classpath of the Spark driver and tasks.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "fileUris"
+            input: true
+            description: |
+              HCFS URIs of files to be placed in the working directory of each executor.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "archiveUris"
+            input: true
+            description: |
+              HCFS URIs of archives to be extracted into the working directory of each executor.
+              Supported file types: .jar, .tar, .tar.gz, .tgz, and .zip.
+            item_type: Api::Type::String
+
+      # sparkBatch
+      - !ruby/object:Api::Type::NestedObject
+        name: 'sparkBatch'
+        input: true
+        description: |
+          A configuration for running an Apache Spark batch workload.
+        exactly_one_of:
+          - pysparkBatch
+          - sparkBatch
+          - sparkRBatch
+          - sparkSqlBatch
+        properties:
+          - !ruby/object:Api::Type::Array
+            name: "args"
+            input: true
+            description: |
+              The arguments to pass to the driver.
+              Do not include arguments that can be set as batch properties, such as --conf, since a collision can occur that causes an incorrect batch submission.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "jarFileUris"
+            input: true
+            description: |
+              HCFS URIs of jar files to add to the classpath of the Spark driver and tasks.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "fileUris"
+            input: true
+            description: |
+              HCFS URIs of files to be placed in the working directory of each executor.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "archiveUris"
+            input: true
+            description: |
+              HCFS URIs of archives to be extracted into the working directory of each executor.
+              Supported file types: .jar, .tar, .tar.gz, .tgz, and .zip.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::String
+            name: 'mainJarFileUri'
+            input: true
+            description: |
+              The HCFS URI of the jar file that contains the main class.
+            exactly_one_of:
+              - spark_batch.0.main_jar_file_uri
+              - spark_batch.0.main_class
+          - !ruby/object:Api::Type::String
+            name: 'mainClass'
+            input: true
+            description: |
+              The name of the driver main class. The jar file that contains the class must be in the classpath or specified in jarFileUris.
+            exactly_one_of:
+              - spark_batch.0.main_jar_file_uri
+              - spark_batch.0.main_class
+
+      # sparkRBatch
+      - !ruby/object:Api::Type::NestedObject
+        name: 'sparkRBatch'
+        input: true
+        description: |
+          A configuration for running an Apache SparkR batch workload.
+        exactly_one_of:
+          - pysparkBatch
+          - sparkBatch
+          - sparkRBatch
+          - sparkSqlBatch
+        properties:
+          - !ruby/object:Api::Type::String
+            name: 'mainRFileUri'
+            required: true
+            input: true
+            description: |
+              The HCFS URI of the main R file to use as the driver. Must be a .R or .r file.
+          - !ruby/object:Api::Type::Array
+            name: "args"
+            input: true
+            description: |
+              The arguments to pass to the driver.
+              Do not include arguments that can be set as batch properties, such as --conf, since a collision can occur that causes an incorrect batch submission.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "fileUris"
+            input: true
+            description: |
+              HCFS URIs of files to be placed in the working directory of each executor.
+            item_type: Api::Type::String
+          - !ruby/object:Api::Type::Array
+            name: "archiveUris"
+            input: true
+            description: |
+              HCFS URIs of archives to be extracted into the working directory of each executor.
+              Supported file types: .jar, .tar, .tar.gz, .tgz, and .zip.
+            item_type: Api::Type::String
+
+      # sparkSqlBatch
+      - !ruby/object:Api::Type::NestedObject
+        name: 'sparkSqlBatch'
+        input: true
+        description: |
+          A configuration for running Apache Spark SQL queries as a batch workload.
+        exactly_one_of:
+          - pysparkBatch
+          - sparkBatch
+          - sparkRBatch
+          - sparkSqlBatch
+        properties:
+          - !ruby/object:Api::Type::String
+            name: 'queryFileUri'
+            required: true
+            input: true
+            description: |
+              The HCFS URI of the script that contains Spark SQL queries to execute.
+          - !ruby/object:Api::Type::KeyValuePairs
+            name: 'queryVariables'
+            input: true
+            description: |
+              Mapping of query variable names to values (equivalent to the Spark SQL command: SET name="value";).
+          - !ruby/object:Api::Type::Array
+            name: "jarFileUris"
+            input: true
+            description: |
+              HCFS URIs of jar files to add to the classpath of the Spark driver and tasks.
+            item_type: Api::Type::String

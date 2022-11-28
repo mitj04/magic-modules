@@ -1,0 +1,11 @@
+resource "google_dataproc_batches" "<%= ctx[:primary_resource_id] %>" {
+  batch_id = "<%= ctx[:vars]['batch_id'] %>"
+  location  = "us-central1"
+  
+  spark_batch {
+    jar_file_uris = [
+      "file:///usr/lib/spark/examples/jars/spark-examples.jar",
+    ]
+    main_class = "org.apache.spark.examples.SparkPi"
+  }
+}

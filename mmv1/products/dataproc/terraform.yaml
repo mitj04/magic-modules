@@ -35,6 +35,40 @@ overrides: !ruby/object:Overrides::ResourceOverrides
         name: policy_id
   Cluster: !ruby/object:Overrides::Terraform::ResourceOverride
     exclude: true
+  Batches: !ruby/object:Overrides::Terraform::ResourceOverride
+    autogen_async: true
+    id_format: "projects/{{project}}/locations/{{location}}/batches/{{batch_id}}"
+    self_link: "projects/{{project}}/locations/{{location}}/batches/{{batch_id}}"
+    import_format: ["projects/{{project}}/locations/{{location}}/batches/{{batch_id}}"]
+    properties:
+      batchId: !ruby/object:Overrides::Terraform::PropertyOverride
+        default_from_api: true
+      runtimeConfig: !ruby/object:Overrides::Terraform::PropertyOverride
+        default_from_api: true
+      runtimeConfig.properties: !ruby/object:Overrides::Terraform::PropertyOverride
+        default_from_api: true
+      environmentConfig: !ruby/object:Overrides::Terraform::PropertyOverride
+        default_from_api: true
+      environmentConfig.executionConfig: !ruby/object:Overrides::Terraform::PropertyOverride
+        default_from_api: true
+      environmentConfig.peripheralsConfig: !ruby/object:Overrides::Terraform::PropertyOverride
+        default_from_api: true
+      environmentConfig.peripheralsConfig.sparkHistoryServerConfig: !ruby/object:Overrides::Terraform::PropertyOverride
+        default_from_api: true
+    custom_code: !ruby/object:Provider::Terraform::CustomCode
+      custom_create: 'templates/terraform/custom_create/dataproc_batches_create.go'
+      constants: 'templates/terraform/constants/dataproc_batches.go.erb'
+    examples:
+      - !ruby/object:Provider::Terraform::Examples
+        name: "dataproc_batches_pyspark"
+        primary_resource_id: "pyspark_batches"
+        vars:
+          batch_id: "terraform-pyspark-batch"
+      - !ruby/object:Provider::Terraform::Examples
+        name: "dataproc_batches_spark"
+        primary_resource_id: "spark_batches"
+        vars:
+          batch_id: "terraform-spark-batch"
 # This is for copying files over
 files: !ruby/object:Provider::Config::Files
   # These files have templating (ERB) code that will be run.

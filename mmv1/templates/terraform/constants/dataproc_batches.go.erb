@@ -1,0 +1,90 @@
+func flattenDataprocBatchesBatchId(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+	if v == nil {
+		return nil
+	}
+
+	original := v.(map[string]interface{})
+	if len(original) == 0 {
+		return nil
+	}
+
+	batch_id := flattenDataprocBatchIdFromMetadata(original["metadata"], d, config)
+	if batch_id == nil {
+		return nil
+	}
+
+	id := batch_id.(string)
+	return id
+}
+
+func flattenDataprocBatchIdFromMetadata(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+    if v == nil {
+		return nil
+	}
+	original := v.(map[string]interface{})
+	if len(original) == 0 {
+		return nil
+	}
+
+	batch_name := flattenDataprocBatchIdFromMetadataBatchName(original["batch"], d, config)
+    if batch_name == nil {
+		return nil
+	}
+
+    parts := strings.Split(batch_name.(string), "/")
+
+    return parts[len(parts)-1]
+}
+
+func flattenDataprocBatchIdFromMetadataBatchName(v interface{}, d *schema.ResourceData, config *Config) interface{} {
+	return v
+}
+
+// contains checks if a string is present in a slice
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
+func resourceDataProcBatchesGetBatch(d *schema.ResourceData, config *Config, billingProject, userAgent string) (map[string]interface{}, error) {
+
+	url, err := replaceVars(d, config, "{{DataprocBasePath}}projects/{{project}}/locations/{{location}}/batches/{{batch_id}}")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+
+	res, err := sendRequest(config, "GET", billingProject, url, userAgent, nil)
+	if err != nil {
+		return map[string]interface{}{}, handleNotFoundError(err, d, fmt.Sprintf("[ERROR] Error while getting batch_id: %s", d.Get("batch_id").(string)))
+	}
+
+	return res, nil
+}
+
+func waitForDataprocBatchState(d *schema.ResourceData, config *Config, billingProject, userAgent string, timeout time.Duration, targetState []string) error {
+	return resource.Retry(timeout, func() *resource.RetryError {
+		batch, err := resourceDataProcBatchesGetBatch(d, config, billingProject, userAgent)
+		if err != nil {
+			if isRetryableError(err) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		state := batch["state"].(string)
+		batch_id := d.Get("batch_id").(string)
+		// with successful end-state
+		if !contains(targetState, state) {
+			log.Printf("[DEBUG] the batch with ID %q has state %q.", batch_id, state)
+			return nil
+		} else {
+			// with in-progress state (PENDING/RUNNING/CANCELLING)
+			log.Printf("[DEBUG] the job with ID %q has state %q.", batch_id, state)
+			return resource.RetryableError(fmt.Errorf("the batch with ID %q has state %q, waiting for %q", batch_id, state, targetState))
+		}
+	})
+}

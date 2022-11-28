@@ -1,0 +1,8 @@
+resource "google_dataproc_batches" "<%= ctx[:primary_resource_id] %>" {
+  batch_id = "<%= ctx[:vars]['batch_id'] %>"
+  location  = "us-central1"
+
+  pyspark_batch {
+    main_python_file_uri = "gs://dataproc-examples-2f10d78d114f6aaec76462e3c310f31f/src/pyspark/hello-world/hello-world.py"
+  }
+}
